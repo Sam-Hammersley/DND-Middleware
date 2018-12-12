@@ -10,7 +10,7 @@ public class Message {
 	/**
 	 * The type of message
 	 */
-	private final int type;
+	private final MessageType type;
 	
 	/**
 	 * The length of the contents of the message
@@ -29,13 +29,13 @@ public class Message {
 	 * @param length the message length.
 	 * @param contents the message contents.
 	 */
-	public Message(int type, int length, byte[] contents) {
+	public Message(MessageType type, int length, byte[] contents) {
 		this.type = type;
 		this.length = length;
 		this.contents = contents;
 	}
 	
-	public int getType() {
+	public MessageType getType() {
 		return type;
 	}
 	
@@ -45,6 +45,11 @@ public class Message {
 	
 	public byte[] getContents() {
 		return contents;
+	}
+	
+	@Override
+	public String toString() {
+		return type + ", " + length + ", " + new String(contents);
 	}
 	
 }
