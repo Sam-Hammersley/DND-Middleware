@@ -13,6 +13,7 @@ import uk.ac.tees.agent.MetaAgent;
 import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.NetworkConstants;
 import uk.ac.tees.net.message.Message;
+import uk.ac.tees.net.message.MessageType;
 import uk.ac.tees.net.util.SocketUtility;
 
 /**
@@ -32,6 +33,8 @@ public class Portal implements Runnable {
 	 */
 	private final Map<String, MetaAgent> agents = new HashMap<>();
 	
+	private final String name;
+	
 	/**
 	 * Denotes the running state of this portal.
 	 */
@@ -45,9 +48,11 @@ public class Portal implements Runnable {
 	/**
 	 * Constructs a new Portal with the given queue of messages.
 	 * 
+	 * @param name name of this portal.
 	 * @param messages a queue of messages. 
 	 */
-	public Portal(BlockingQueue<Message> messages) {
+	public Portal(String name, BlockingQueue<Message> messages) {
+		this.name = name;
 		this.messages = messages;
 	}
 
@@ -68,11 +73,11 @@ public class Portal implements Runnable {
 	 */
 	public void addAgent(MetaAgent agent) {
 		
-		if (agents.size() >= MAX_AGENTS) { //TODO: relocate
+		/*if (agents.size() >= MAX_AGENTS) { //TODO: relocate
 			Portal portal = new Portal(new LinkedBlockingQueue<>());
 			portal.addAgent(agent);
 			return;
-		}
+		}*/
 		
 		agents.put(agent.getUid(), agent);
 		agent.attach(this);
@@ -87,6 +92,23 @@ public class Portal implements Runnable {
 	public boolean containsAgent(String uid) {
 		return agents.containsKey(uid);
 	}
+	
+	/**
+	 * Connects to a router at the given address and port and sends an add portal message to the router.
+	 * 
+	 * @param host the host address to connect to.
+	 * @param port the port to connect on.
+	 * @return the connection between this portal and the router.
+	 */
+	public Connection connectToRouter(String host, int port) {
+		Socket socket = SocketUtility.createSocket(SocketFactory.getDefault(), "localhost", NetworkConstants.SERVER_PORT);
+		
+		Connection connection = new Connection(socket);
+		
+		connection.write(new Message(MessageType.ADD_PORTAL_MESSAGE, name, host, new byte[0]));
+		
+		return connection;
+	}
 
 	@Override
 	public void run() {
@@ -99,13 +121,6 @@ public class Portal implements Runnable {
 					agents.get(message.getDestination()).receive(message);
 				} else {
 					
-					Socket socket = SocketUtility.createSocket(SocketFactory.getDefault(), "localhost", NetworkConstants.SERVER_PORT);
-					
-					try (Connection connection = new Connection(socket)) {
-						connection.write(message);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 				}
 				
 			} catch(InterruptedException e) {

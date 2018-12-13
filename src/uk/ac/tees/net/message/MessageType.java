@@ -6,6 +6,8 @@ public enum MessageType {
 
 	STRING_MESSAGE(0),
 	
+	ADD_PORTAL_MESSAGE(1),
+	
 	TERMINATION(-1);
 	
 	private final int type;
