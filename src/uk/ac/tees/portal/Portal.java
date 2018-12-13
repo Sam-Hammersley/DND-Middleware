@@ -1,15 +1,13 @@
 package uk.ac.tees.portal;
 
-import java.io.IOException;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.net.SocketFactory;
 
 import uk.ac.tees.agent.MetaAgent;
+import uk.ac.tees.agent.UserAgent;
 import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.NetworkConstants;
 import uk.ac.tees.net.message.Message;
@@ -21,7 +19,7 @@ import uk.ac.tees.net.util.SocketUtility;
  * 
  * @author Sam Hammersley (q5315908)
  */
-public class Portal implements Runnable {
+public class Portal extends MetaAgent {
 	
 	/**
 	 * Maximum number of agents per portal.
@@ -31,54 +29,31 @@ public class Portal implements Runnable {
 	/**
 	 * {@link MetaAgent}s mapped to their unique identifier.
 	 */
-	private final Map<String, MetaAgent> agents = new HashMap<>();
-	
-	private final String name;
-	
-	/**
-	 * Denotes the running state of this portal.
-	 */
-	private volatile boolean running = true;
-	
-	/**
-	 * A {@link BlockingQueue} of {@link Message}s.
-	 */
-	private final BlockingQueue<Message> messages;
-	
+	private final Map<String, UserAgent> agents = new HashMap<>();
+
 	/**
 	 * Constructs a new Portal with the given queue of messages.
 	 * 
 	 * @param name name of this portal.
 	 * @param messages a queue of messages. 
 	 */
-	public Portal(String name, BlockingQueue<Message> messages) {
-		this.name = name;
-		this.messages = messages;
+	public Portal(String uid) {
+		super(uid);
 	}
 
-	/**
-	 * Queues a message to be processed.
-	 * 
-	 * @param message the message to be processed.
-	 * @return {@code true} if the message was queued.
-	 */
-	public boolean queue(Message message) {
-		return messages.offer(message);
-	}
-	
 	/**
 	 * Adds an agent to this portal to communicate with other agents.
 	 * 
 	 * @param agent the agent to add.
 	 */
-	public void addAgent(MetaAgent agent) {
-		
+	public void addAgent(UserAgent agent) {
+
 		/*if (agents.size() >= MAX_AGENTS) { //TODO: relocate
 			Portal portal = new Portal(new LinkedBlockingQueue<>());
 			portal.addAgent(agent);
 			return;
 		}*/
-		
+
 		agents.put(agent.getUid(), agent);
 		agent.attach(this);
 	}
@@ -105,27 +80,24 @@ public class Portal implements Runnable {
 		
 		Connection connection = new Connection(socket);
 		
-		connection.write(new Message(MessageType.ADD_PORTAL_MESSAGE, name, host, new byte[0]));
+		connection.write(new Message(MessageType.ADD_PORTAL_MESSAGE, uid, host, new byte[0]));
 		
 		return connection;
 	}
 
 	@Override
-	public void run() {
-		// while this portal is running wait for an available message in the queue and process once there is an available message.
-		while (running) {
-			try {
-				Message message = messages.take();
-				
-				if (agents.containsKey(message.getDestination())) {
-					agents.get(message.getDestination()).receive(message);
-				} else {
-					
-				}
-				
-			} catch(InterruptedException e) {
-				throw new RuntimeException("Thread interrupted while processing messages!", e);
-			}
+	public void send(Message message) {
+		UserAgent agent = agents.get(message.getDestination());
+		
+		agent.queue(message);
+	}
+
+	@Override
+	public void receive(Message message) {
+		if (containsAgent(message.getDestination())) {
+			queue(message);
+		} else {
+			//implement router.
 		}
 	}
 	
