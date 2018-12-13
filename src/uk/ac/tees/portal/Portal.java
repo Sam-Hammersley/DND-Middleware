@@ -53,9 +53,10 @@ public class Portal extends MetaAgent {
 			portal.addAgent(agent);
 			return;
 		}*/
-
 		agents.put(agent.getUid(), agent);
 		agent.attach(this);
+		
+		new Thread(agent).start();
 	}
 	
 	/**
@@ -87,17 +88,15 @@ public class Portal extends MetaAgent {
 
 	@Override
 	public void send(Message message) {
-		UserAgent agent = agents.get(message.getDestination());
-		
-		agent.queue(message);
+		queue(message);
 	}
 
 	@Override
 	public void receive(Message message) {
 		if (containsAgent(message.getDestination())) {
-			queue(message);
-		} else {
-			//implement router.
+			UserAgent agent = agents.get(message.getDestination());
+			
+			agent.queue(message);
 		}
 	}
 	

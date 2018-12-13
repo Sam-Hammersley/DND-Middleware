@@ -82,7 +82,7 @@ public abstract class MetaAgent implements Runnable {
 	public void run() {
 		try {
 			while (running) {
-				send(messages.take());
+				receive(messages.take());
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
