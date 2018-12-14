@@ -2,6 +2,7 @@ package uk.ac.tees.agent;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageComparator;
@@ -19,6 +20,11 @@ public abstract class MetaAgent implements Runnable {
 	private final BlockingQueue<Message> messages = new PriorityBlockingQueue<Message>(10, new MessageComparator());
 	
 	/**
+	 * Creates a {@link Thread} for this meta-agent.
+	 */
+	private final ThreadFactory threadFactory;
+	
+	/**
 	 * A field to uniquely identify agents.
 	 */
 	protected final String uid;
@@ -33,8 +39,13 @@ public abstract class MetaAgent implements Runnable {
 	 * 
 	 * @param uid unique identifier.
 	 */
-	public MetaAgent(String uid) {
+	public MetaAgent(String uid, ThreadFactory threadFactory) {
 		this.uid = uid;
+		this.threadFactory = threadFactory;
+	}
+	
+	public void start() {
+		threadFactory.newThread(this).start();
 	}
 	
 	/**

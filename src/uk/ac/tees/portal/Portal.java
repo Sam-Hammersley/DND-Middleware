@@ -3,6 +3,7 @@ package uk.ac.tees.portal;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
 
 import javax.net.SocketFactory;
 
@@ -35,10 +36,10 @@ public class Portal extends MetaAgent {
 	 * Constructs a new Portal with the given queue of messages.
 	 * 
 	 * @param name name of this portal.
-	 * @param messages a queue of messages. 
+	 * @param threadFactory threadFactory for creating threads.
 	 */
-	public Portal(String uid) {
-		super(uid);
+	public Portal(String uid, ThreadFactory threadFactory) {
+		super(uid, threadFactory);
 	}
 
 	/**
@@ -56,7 +57,11 @@ public class Portal extends MetaAgent {
 		agents.put(agent.getUid(), agent);
 		agent.attach(this);
 		
-		new Thread(agent).start();
+		agent.start();
+	}
+	
+	public UserAgent getAgent(String uid) {
+		return agents.get(uid);
 	}
 	
 	/**
@@ -97,6 +102,8 @@ public class Portal extends MetaAgent {
 			UserAgent agent = agents.get(message.getDestination());
 			
 			agent.queue(message);
+		} else {
+			
 		}
 	}
 	

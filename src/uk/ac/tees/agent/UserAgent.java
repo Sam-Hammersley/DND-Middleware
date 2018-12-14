@@ -3,8 +3,10 @@ package uk.ac.tees.agent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
 
 import uk.ac.tees.net.message.Message;
+import uk.ac.tees.net.message.handler.MessageHandler;
 import uk.ac.tees.portal.Portal;
 
 public class UserAgent extends MetaAgent {
@@ -17,7 +19,7 @@ public class UserAgent extends MetaAgent {
 	/**
 	 * {@link MessageHandler}s for incoming messages.
 	 */
-	private final List<MessageHandler> messageHandlers = new ArrayList<>();
+	private final List<MessageHandler<UserAgent>> messageHandlers = new ArrayList<>();
 	
 	/**
 	 * Constructs a new {@link UserAgent}.
@@ -25,15 +27,15 @@ public class UserAgent extends MetaAgent {
 	 * @param uid
 	 * @param handlers
 	 */
-	protected UserAgent(String uid, MessageHandler...handlers) {
-		super(uid);
+	protected UserAgent(String uid, ThreadFactory threadFactory, MessageHandler<UserAgent>...handlers) {
+		super(uid, threadFactory);
 		Arrays.stream(handlers).forEach(messageHandlers::add);
 	}
 	
 	/**
 	 * Adds a {@link MessageHandler} to {@link #messageHandlers}.
 	 */
-	public void addMessageHandler(MessageHandler messageHandler) {
+	public void addMessageHandler(MessageHandler<UserAgent> messageHandler) {
 		messageHandlers.add(messageHandler);
 	}
 	
@@ -53,7 +55,7 @@ public class UserAgent extends MetaAgent {
 
 	@Override
 	public void receive(Message message) {
-		messageHandlers.forEach(mh -> mh.handleMessage(message));
+		messageHandlers.forEach(mh -> mh.handleMessage(message, this));
 	}
 	
 }

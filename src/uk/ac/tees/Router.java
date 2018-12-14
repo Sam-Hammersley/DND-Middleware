@@ -3,12 +3,15 @@ package uk.ac.tees;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadFactory;
 
 import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
+import uk.ac.tees.net.message.handler.MessageHandlers;
 
 public final class Router implements Runnable {
 
@@ -17,11 +20,17 @@ public final class Router implements Runnable {
 	private final ServerSocket serverSocket;
 
 	private final ExecutorService workerExecutor;
+	
+	private final Map<String, Connection> portalConnections = new HashMap<>();
 
 	public Router(ThreadFactory threadFactory, ServerSocket serverSocket, ExecutorService workerExecutor) {
 		this.threadFactory = threadFactory;
 		this.serverSocket = serverSocket;
 		this.workerExecutor = workerExecutor;
+	}
+	
+	public void addPortalConnection(String portalUid, Connection connection) {
+		portalConnections.put(portalUid, connection);
 	}
 
 	public void start() {
@@ -40,8 +49,9 @@ public final class Router implements Runnable {
 						if (message.getType() == MessageType.TERMINATION) {
 							break;
 						}
-
-						//TODO: pass the message on
+						
+						MessageType type = message.getType();
+						MessageHandlers.get(type).handleMessage(message, this);
 					}
 				});
 			} catch (IOException e) {
