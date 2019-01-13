@@ -1,11 +1,10 @@
 package uk.ac.tees.agent;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 
 import uk.ac.tees.net.message.Message;
-import uk.ac.tees.net.message.MessageComparator;
 
 /**
  * Represents an agent that can communicate with other agents that are a part of the system.
@@ -17,7 +16,7 @@ public abstract class MetaAgent {
 	/**
 	 * Queued incoming {@link Message}s.
 	 */
-	private final BlockingQueue<Message> messages = new PriorityBlockingQueue<Message>(10, new MessageComparator());
+	private final BlockingQueue<Message> messages = new LinkedBlockingQueue<Message>();
 	
 	/**
 	 * Creates a {@link Thread} for this meta-agent.

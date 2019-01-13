@@ -14,8 +14,6 @@ public class AddAgentMessageHandler implements MessageHandler<Router> {
 		String uid = new String(message.getContents());
 		
 		portalAgents.add(uid);
-		
-		System.out.println(router.getConnectionKey(message.getSource()).get());
 	}
 	
 }
