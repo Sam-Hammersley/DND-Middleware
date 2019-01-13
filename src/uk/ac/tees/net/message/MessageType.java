@@ -8,6 +8,8 @@ public enum MessageType {
 	
 	ADD_PORTAL_MESSAGE(1),
 	
+	ADD_AGENT(2),
+	
 	TERMINATION(-1);
 	
 	private final int type;

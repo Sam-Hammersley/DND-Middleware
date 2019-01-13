@@ -10,7 +10,7 @@ public class MessageHandlers {
 	private static final Map<MessageType, MessageHandler<?>> HANDLERS = new HashMap<>();
 	
 	static {
-		HANDLERS.put(MessageType.ADD_PORTAL_MESSAGE, new AddPortalMessageHandler());
+		HANDLERS.put(MessageType.ADD_AGENT, new AddAgentMessageHandler());
 	}
 	
 	@SuppressWarnings("unchecked")

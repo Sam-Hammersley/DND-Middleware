@@ -1,7 +1,6 @@
 package uk.ac.tees.agent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadFactory;
 
@@ -27,9 +26,8 @@ public class UserAgent extends MetaAgent {
 	 * @param uid
 	 * @param handlers
 	 */
-	protected UserAgent(String uid, ThreadFactory threadFactory, MessageHandler<UserAgent>...handlers) {
+	protected UserAgent(String uid, ThreadFactory threadFactory) {
 		super(uid, threadFactory);
-		Arrays.stream(handlers).forEach(messageHandlers::add);
 	}
 	
 	/**
@@ -39,23 +37,18 @@ public class UserAgent extends MetaAgent {
 		messageHandlers.add(messageHandler);
 	}
 	
-	/**
-	 * Assigns this agent's portal reference to the given instance.
-	 * 
-	 * @param portal the portal to send messages through.
-	 */
-	public void attach(Portal portal) {
+	public void setPortal(Portal portal) {
 		this.portal = portal;
 	}
 
 	@Override
 	public void send(Message message) {
-		portal.receive(message);
+		portal.handle(message);
 	}
 
 	@Override
-	public void receive(Message message) {
-		messageHandlers.forEach(mh -> mh.handleMessage(message, this));
+	public void handle(Message message) {
+		System.out.println(message);
 	}
 	
 }

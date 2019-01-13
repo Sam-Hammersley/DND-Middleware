@@ -8,7 +8,7 @@ import java.net.Socket;
 
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
-import uk.ac.tees.net.message.TerminationMessage;
+import uk.ac.tees.net.message.impl.TerminationMessage;
 import uk.ac.tees.net.util.StreamUtility;
 
 /**
@@ -33,6 +33,15 @@ public final class Connection implements Closeable {
 	}
 
 	/**
+	 * Gets the address connected to.
+	 * 
+	 * @return the connected to address
+	 */
+	public String getAddress() {
+		return socket.getInetAddress().toString();
+	}
+	
+	/**
 	 * Closes the connection.
 	 */
 	@Override
@@ -54,14 +63,12 @@ public final class Connection implements Closeable {
 			if (type == MessageType.TERMINATION) {
 				return new TerminationMessage();
 			}
+
+			String source = StreamUtility.readString(in, in.read());
 			
-			byte[] srcRaw = StreamUtility.readByte(in, in.read());
-			String source = new String(srcRaw);
+			String destination = StreamUtility.readString(in, in.read());
 
-			byte[] dstRaw = StreamUtility.readByte(in, in.read());
-			String destination = new String(dstRaw);
-
-			byte[] contents = StreamUtility.readByte(in, in.read());
+			byte[] contents = StreamUtility.readBytes(in, in.read());
 
 			return new Message(type, source, destination, contents);
 		} catch (IOException e) {
@@ -83,13 +90,18 @@ public final class Connection implements Closeable {
 			OutputStream out = socket.getOutputStream();
 
 			out.write(message.getType().getType());
-			out.write(message.getSource().getBytes());
-			out.write(message.getDestination().getBytes());
-			out.write(message.getDestination().getBytes());
+			StreamUtility.writeString(out, message.getSource());
+			StreamUtility.writeString(out, message.getDestination());
+			out.write(message.getContents().length);
 			out.write(message.getContents());
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to write message to socket", e);
 		}
+	}
+	
+	@Override
+	public String toString() {
+		return getAddress() + ":" + socket.getLocalPort();
 	}
 
 }

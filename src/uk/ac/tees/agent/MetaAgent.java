@@ -12,7 +12,7 @@ import uk.ac.tees.net.message.MessageComparator;
  * 
  * @author Sam Hammersley (q5315908)
  */
-public abstract class MetaAgent implements Runnable {
+public abstract class MetaAgent {
 
 	/**
 	 * Queued incoming {@link Message}s.
@@ -22,7 +22,7 @@ public abstract class MetaAgent implements Runnable {
 	/**
 	 * Creates a {@link Thread} for this meta-agent.
 	 */
-	private final ThreadFactory threadFactory;
+	protected final ThreadFactory threadFactory;
 	
 	/**
 	 * A field to uniquely identify agents.
@@ -45,7 +45,15 @@ public abstract class MetaAgent implements Runnable {
 	}
 	
 	public void start() {
-		threadFactory.newThread(this).start();
+		threadFactory.newThread(() -> {
+			try {
+				while (running) {
+					handle(messages.take());
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}).start();
 	}
 	
 	/**
@@ -66,11 +74,11 @@ public abstract class MetaAgent implements Runnable {
 	public abstract void send(Message message);
 	
 	/**
-	 * 
+	 * Handles a message
 	 * 
 	 * @param message
 	 */
-	protected abstract void receive(Message message);
+	protected abstract void handle(Message message);
 	
 	/**
 	 * Queues a message to be processed.
@@ -87,17 +95,6 @@ public abstract class MetaAgent implements Runnable {
 	 */
 	public void stop() {
 		running = false;
-	}
-	
-	@Override
-	public void run() {
-		try {
-			while (running) {
-				receive(messages.take());
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 	
 }

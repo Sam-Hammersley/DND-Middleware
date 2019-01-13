@@ -9,6 +9,6 @@ public interface MessageHandler<T> {
 	 * 
 	 * @param message the message received.
 	 */
-	public void handleMessage(Message message, T t);
+	public void handleMessage(T t, Message message);
 	
 }
