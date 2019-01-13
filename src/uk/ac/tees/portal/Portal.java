@@ -98,6 +98,7 @@ public class Portal extends MetaAgent {
 	public void send(Message message) {
 		if (containsAgent(message.getDestination())) {
 			UserAgent agent = agents.get(message.getDestination());
+			
 			agent.queue(message);
 			
 		} else {
@@ -106,11 +107,12 @@ public class Portal extends MetaAgent {
 	}
 
 	@Override
-	public void handle(Message message) {
+	public void handle(Message message) {		
 		if (message.getDestination().equals(uid)) {
-			System.out.println(message);
+			System.out.println(uid + "received " + message);
 			
 		} else if (containsAgent(message.getDestination())) {
+			System.out.println(uid);
 			UserAgent agent = agents.get(message.getDestination());
 			agent.queue(message);
 			
@@ -118,6 +120,27 @@ public class Portal extends MetaAgent {
 			connection.write(message);
 			
 		}
+	}
+	
+	@Override
+	public void start() {
+		super.start();
+		
+		threadFactory.newThread(() -> {
+			while (true) {
+				if (connection == null) {
+					continue;
+				}
+
+				Message message = connection.read();
+				
+				if (message.getType().equals(MessageType.TERMINATION)) {
+					break;
+				}
+
+				queue(message);
+			}
+		}).start();
 	}
 	
 }

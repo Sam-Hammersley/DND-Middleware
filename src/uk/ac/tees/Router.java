@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -15,6 +16,7 @@ import javax.net.ServerSocketFactory;
 
 import uk.ac.tees.agent.MetaAgent;
 import uk.ac.tees.net.Connection;
+import uk.ac.tees.net.NetworkConstants;
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
 import uk.ac.tees.net.message.handler.MessageHandler;
@@ -39,19 +41,24 @@ public class Router extends MetaAgent {
 	 */
 	private final Map<HashSet<String>, Connection> cachedConnections = new ConcurrentHashMap<>();
 
-	public Router(String uid, int port, ThreadFactory threadFactory) {
-		super(uid, threadFactory);
+	public Router(int port, ThreadFactory threadFactory) {
+		super(NetworkConstants.HOST_ADDRESS, threadFactory);
 		this.port = port;
 	}
-	
+
 	/**
 	 * Gets a connection for an id
 	 * 
 	 * @param uid the id
 	 * @return a {@link Connection}
 	 */
-	public Optional<Connection> getConnection(String uid) {
-		return cachedConnections.keySet().stream().filter(s -> s.contains(uid)).map(cachedConnections::get).findAny();
+	public Connection getConnection(String uid) {
+		for (Entry<HashSet<String>, Connection> entry : cachedConnections.entrySet()) {
+			if (entry.getKey().contains(uid)) {
+				return entry.getValue();
+			}
+		}
+		return null;
 	}
 	
 	public Optional<HashSet<String>> getConnectionKey(String uid) {
@@ -123,19 +130,27 @@ public class Router extends MetaAgent {
 
 	@Override
 	public void send(Message message) {
-		Optional<Connection> connection = getConnection(message.getDestination());
-		
-		connection.ifPresent(c -> c.write(message));
+		Connection connection = getConnection(message.getDestination());
+
+		if (connection == null) {
+			return;
+		}
+
+		connection.write(message);
 	}
 
 	@Override
 	protected void handle(Message message) {
 		MessageHandler<Router> handler = MessageHandlers.get(message.getType());
-		
+
 		if (handler != null) {
 			handler.handleMessage(this, message);
 		} else {
 			System.out.println(message);
+		}
+
+		if (!message.getDestination().equals(uid)) {
+			send(message);
 		}
 	}
 

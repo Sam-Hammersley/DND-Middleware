@@ -103,5 +103,10 @@ public final class Connection implements Closeable {
 	public String toString() {
 		return getAddress() + ":" + socket.getLocalPort();
 	}
+	
+	@Override
+	public int hashCode() {
+		return socket.hashCode();
+	}
 
 }
