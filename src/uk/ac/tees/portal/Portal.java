@@ -47,7 +47,7 @@ public class Portal extends MetaAgent {
 	 * @return the connection between this portal and the router.
 	 */
 	public void connectToRouter(String host, int port) {
-		Socket socket = SocketUtility.createSocket(SocketFactory.getDefault(), "localhost", port);
+		Socket socket = SocketUtility.createSocket(SocketFactory.getDefault(), host, port);
 		
 		connection = new Connection(socket);
 		
