@@ -45,8 +45,12 @@ public final class Connection implements Closeable {
 	 * Closes the connection.
 	 */
 	@Override
-	public void close() throws IOException {
-		socket.close();
+	public void close() {
+		try {
+			socket.close();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

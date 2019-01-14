@@ -6,7 +6,7 @@ import uk.ac.tees.net.message.MessageType;
 public class StringMessage extends Message {
 
 	public StringMessage(String source, String destination, String message) {
-		super(MessageType.STRING_MESSAGE, source, destination, message.getBytes());
+		super(MessageType.STRING, source, destination, message.getBytes());
 	}
 
 }

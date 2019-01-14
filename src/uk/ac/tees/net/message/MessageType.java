@@ -4,9 +4,9 @@ import java.util.Arrays;
 
 public enum MessageType {
 
-	STRING_MESSAGE(0),
+	STRING(0),
 	
-	ADD_PORTAL_MESSAGE(1),
+	ADD_PORTAL(1),
 	
 	ADD_AGENT(2),
 	

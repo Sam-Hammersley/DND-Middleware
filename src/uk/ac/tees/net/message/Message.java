@@ -1,5 +1,7 @@
 package uk.ac.tees.net.message;
 
+import java.time.LocalDateTime;
+
 /**
  * Represents the messages sent from one agent to another.
  * 
@@ -28,6 +30,11 @@ public class Message {
 	private final byte[] contents;
 	
 	/**
+	 * The time at which this message was generated.
+	 */
+	private final LocalDateTime timestamp;
+	
+	/**
 	 * Constructs a new {@link Message} with the given parameters.
 	 * 
 	 * @param type the message type.
@@ -39,6 +46,7 @@ public class Message {
 		this.source = source;
 		this.destination = destination;
 		this.contents = contents;
+		this.timestamp = LocalDateTime.now();
 	}
 	
 	public String getSource() {
@@ -57,9 +65,13 @@ public class Message {
 		return contents;
 	}
 	
+	public LocalDateTime getTimestamp() {
+		return timestamp;
+	}
+	
 	@Override
 	public String toString() {
-		return source + " to " + destination + ": " + new String(contents);
+		return "[" + timestamp + "] to " + destination + ": " + new String(contents);
 	}
 	
 }

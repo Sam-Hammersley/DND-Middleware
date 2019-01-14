@@ -1,4 +1,4 @@
-package uk.ac.tees.node;
+package uk.ac.tees.node.portal;
 
 import java.net.Socket;
 import java.util.HashMap;
@@ -12,7 +12,8 @@ import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
 import uk.ac.tees.net.util.SocketUtility;
-import uk.ac.tees.node.monitor.NodeMonitor;
+import uk.ac.tees.node.Node;
+import uk.ac.tees.node.NodeObserver;
 
 /**
  * Represents a portal within the middleware.
@@ -36,8 +37,8 @@ public class Portal extends Node {
 	 * 
 	 * @param name name of this portal.
 	 */
-	public Portal(String uid, NodeMonitor nodeMonitor) {
-		super(uid, nodeMonitor);
+	public Portal(String uid, NodeObserver observer) {
+		super(uid, observer);
 	}
 
 	/**
@@ -52,7 +53,7 @@ public class Portal extends Node {
 		
 		connection = new Connection(socket);
 		
-		connection.write(new Message(MessageType.ADD_PORTAL_MESSAGE, uid, host, new byte[0]));
+		connection.write(new Message(MessageType.ADD_PORTAL, uid, host, new byte[0]));
 		
 		agents.values().forEach(a -> connection.write(new Message(MessageType.ADD_AGENT, uid, host, a.getUid().getBytes())));
 	}

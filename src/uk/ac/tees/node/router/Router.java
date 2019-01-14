@@ -16,12 +16,12 @@ import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.NetworkConstants;
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
+import uk.ac.tees.net.message.handler.RouterMessageHandler;
+import uk.ac.tees.net.message.handler.RouterMessageHandlers;
 import uk.ac.tees.net.message.impl.StringMessage;
 import uk.ac.tees.net.util.SocketUtility;
 import uk.ac.tees.node.Node;
-import uk.ac.tees.node.monitor.NodeMonitor;
-import uk.ac.tees.node.router.messages.RouterMessageHandler;
-import uk.ac.tees.node.router.messages.RouterMessageHandlers;
+import uk.ac.tees.node.NodeObserver;
 
 /**
  * Represents a router that takes in connections
@@ -50,8 +50,8 @@ public class Router extends Node {
 	 *
 	 * @param port the port to run this service on.
 	 */
-	public Router(int port, NodeMonitor nodeMonitor) {
-		super(NetworkConstants.HOST_ADDRESS, nodeMonitor);
+	public Router(int port, NodeObserver observer) {
+		super(NetworkConstants.HOST_ADDRESS, observer);
 		
 		this.port = port;
 	}
@@ -82,8 +82,17 @@ public class Router extends Node {
 	 * @param uids the uids associated with the given {@link Connection}.
 	 * @param connection the {@link Connection}.
 	 */
-	public void storeConnection(HashSet<String> uids, Connection connection) {
-		cachedConnections.put(uids, connection);
+	public boolean storeConnection(String uid, Connection connection) {
+		Optional<HashSet<String>> ids = getConnectionKey(uid);
+		
+		if (!ids.isPresent()) {
+			HashSet<String> set = new HashSet<>();
+			set.add(uid);
+			
+			cachedConnections.put(set, connection);
+		}
+		
+		return !ids.isPresent();
 	}
 
 	/**
@@ -127,12 +136,13 @@ public class Router extends Node {
 				System.out.println("Connection established with " + connection.getAddress());
 				Message message = connection.read();
 				
-				if (message.getType().equals(MessageType.ADD_PORTAL_MESSAGE)) {// special case.
-					HashSet<String> ids = new HashSet<>();
-					
-					ids.add(message.getSource());
-					storeConnection(ids, connection);
-					
+				if (message.getType().equals(MessageType.ADD_PORTAL)) {// special case.
+					if (!storeConnection(message.getSource(), connection)) {
+						connection.write(new StringMessage(uid, message.getSource(), "Already contains connection for " + uid));
+						connection.close();
+						return;
+					}
+
 				} else if (!hasConnection(message.getSource())) {
 					connection.write(new StringMessage(uid, message.getSource(), "Connection refused, handshake required"));
 					connection.close();
@@ -159,7 +169,7 @@ public class Router extends Node {
 
 	@Override
 	public void handleMessage(Message message) {
-		RouterMessageHandler<Router> handler = RouterMessageHandlers.get(message.getType());
+		RouterMessageHandler handler = RouterMessageHandlers.get(message.getType());
 
 		if (handler != null) {
 			handler.handleMessage(this, message);

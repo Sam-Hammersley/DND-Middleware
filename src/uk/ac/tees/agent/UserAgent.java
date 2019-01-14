@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import uk.ac.tees.net.message.Message;
-import uk.ac.tees.node.Portal;
+import uk.ac.tees.node.portal.Portal;
 
 /**
  * Represents a user-defined agent.
@@ -20,14 +20,14 @@ public class UserAgent extends MetaAgent {
 	private Portal portal;
 
 	/**
-	 * {@link Consumer}s for incoming messages
+	 * {@link Consumer}s for incoming messages.
 	 */
 	private final List<Consumer<Message>> messageConsumers = new ArrayList<>();
 
 	/**
 	 * Constructs a new {@link UserAgent}.
 	 * 
-	 * @param uid the name of this user agent
+	 * @param uid
 	 */
 	protected UserAgent(String uid) {
 		super(uid);
@@ -36,7 +36,7 @@ public class UserAgent extends MetaAgent {
 	/**
 	 * Adds a {@link Consumer} to {@link #messageConsumers}.
 	 */
-	public void addMessageHandler(Consumer<Message> messageConsumer) {
+	public void addMessageConsumer(Consumer<Message> messageConsumer) {
 		messageConsumers.add(messageConsumer);
 	}
 	
@@ -56,9 +56,7 @@ public class UserAgent extends MetaAgent {
 
 	@Override
 	public void handle(Message message) {
-		for (Consumer<Message> consumer : messageConsumers) {
-			consumer.accept(message);
-		}
+		messageConsumers.forEach(h -> h.accept(message));
 	}
 
 	@Override
