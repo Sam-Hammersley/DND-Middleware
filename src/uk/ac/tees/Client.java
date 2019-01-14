@@ -14,9 +14,11 @@ public final class Client {
 		Portal portal = new Portal("portal2");
 		
 		SomeUserAgent agent = new SomeUserAgent("user2");
+		agent.addMessageHandler((u, m) -> System.out.println(m));
+		
 		portal.addAgent(agent);
 		
-		portal.connectToRouter("152.105.67.102", NetworkConstants.SERVER_PORT);
+		portal.connectToRouter("localhost", NetworkConstants.SERVER_PORT);
 		portal.start();
 		
 		try (Scanner scanner = new Scanner(System.in)) {

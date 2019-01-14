@@ -57,7 +57,7 @@ public class UserAgent extends MetaAgent {
 
 	@Override
 	public void handle(Message message) {
-		System.out.println(message);
+		messageHandlers.forEach(h -> h.handleMessage(this, message));
 	}
 
 	@Override
