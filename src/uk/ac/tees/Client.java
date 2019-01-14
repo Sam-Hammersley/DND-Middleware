@@ -1,8 +1,6 @@
 package uk.ac.tees;
 
 import java.util.Scanner;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import uk.ac.tees.agent.SomeUserAgent;
 import uk.ac.tees.net.NetworkConstants;
@@ -13,13 +11,12 @@ public final class Client {
 
 	public static void main(String[] args) {
 		
-		ThreadFactory tf = Executors.defaultThreadFactory();
-		Portal portal = new Portal("portal2", tf);
+		Portal portal = new Portal("portal2");
 		
-		SomeUserAgent agent = new SomeUserAgent("user2", tf);
+		SomeUserAgent agent = new SomeUserAgent("user2");
 		portal.addAgent(agent);
 		
-		portal.connectToRouter(NetworkConstants.HOST_ADDRESS, NetworkConstants.SERVER_PORT);
+		portal.connectToRouter("152.105.67.102", NetworkConstants.SERVER_PORT);
 		portal.start();
 		
 		try (Scanner scanner = new Scanner(System.in)) {

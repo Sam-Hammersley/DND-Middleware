@@ -3,7 +3,6 @@ package uk.ac.tees.portal;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ThreadFactory;
 
 import javax.net.SocketFactory;
 
@@ -20,12 +19,12 @@ import uk.ac.tees.net.util.SocketUtility;
  * @author Sam Hammersley (q5315908)
  */
 public class Portal extends MetaAgent {
-	
+
 	/**
 	 * {@link MetaAgent}s mapped to their unique identifier.
 	 */
 	private final Map<String, UserAgent> agents = new HashMap<>();
-	
+
 	/**
 	 * Optional connection to a router.
 	 */
@@ -35,10 +34,9 @@ public class Portal extends MetaAgent {
 	 * Constructs a new Portal with the given queue of messages.
 	 * 
 	 * @param name name of this portal.
-	 * @param threadFactory threadFactory for creating threads.
 	 */
-	public Portal(String uid, ThreadFactory threadFactory) {
-		super(uid, threadFactory);
+	public Portal(String uid) {
+		super(uid);
 	}
 
 	/**
@@ -75,6 +73,15 @@ public class Portal extends MetaAgent {
 	}
 	
 	/**
+	 * Gets the agent count.
+	 * 
+	 * @return the agent count.
+	 */
+	public int getAgentCount() {
+		return agents.size();
+	}
+	
+	/**
 	 * Gets an agent of this portal by it's uid.
 	 * 
 	 * @param uid the uid associated with an agent.
@@ -94,12 +101,21 @@ public class Portal extends MetaAgent {
 		return agents.containsKey(uid);
 	}
 
+	/**
+	 * Sends the specified message to the appropriate user agent.
+	 * 
+	 * @param message the message to send to the agent.
+	 */
+	private void sendToAgent(Message message) {
+		UserAgent agent = agents.get(message.getDestination());
+		
+		agent.queue(message);
+	}
+
 	@Override
 	public void send(Message message) {
 		if (containsAgent(message.getDestination())) {
-			UserAgent agent = agents.get(message.getDestination());
-			
-			agent.queue(message);
+			sendToAgent(message);
 			
 		} else {
 			connection.write(message);
@@ -107,40 +123,34 @@ public class Portal extends MetaAgent {
 	}
 
 	@Override
-	public void handle(Message message) {		
+	public void handle(Message message) {
 		if (message.getDestination().equals(uid)) {
-			System.out.println(uid + "received " + message);
-			
+			System.out.println(message);
+
 		} else if (containsAgent(message.getDestination())) {
-			System.out.println(uid);
-			UserAgent agent = agents.get(message.getDestination());
-			agent.queue(message);
-			
+			sendToAgent(message);
+
 		} else {
 			connection.write(message);
-			
+
 		}
 	}
-	
+
 	@Override
-	public void start() {
-		super.start();
-		
-		threadFactory.newThread(() -> {
-			while (true) {
-				if (connection == null) {
-					continue;
-				}
-
-				Message message = connection.read();
-				
-				if (message.getType().equals(MessageType.TERMINATION)) {
-					break;
-				}
-
-				queue(message);
+	public void receiveMessages() {
+		while (true) {
+			if (connection == null) {
+				continue;
 			}
-		}).start();
+
+			Message message = connection.read();
+
+			if (message.getType().equals(MessageType.TERMINATION)) {
+				break;
+			}
+
+			queue(message);
+		}
 	}
-	
+
 }

@@ -12,18 +12,18 @@ public enum MessageType {
 	
 	TERMINATION(-1);
 	
-	private final int type;
+	private final int intValue;
 	
-	MessageType(int type) {
-		this.type = type;
+	MessageType(int intValue) {
+		this.intValue = intValue;
 	}
 	
-	public int getType() {
-		return type;
+	public int getIntValue() {
+		return intValue;
 	}
 	
-	public static MessageType forType(int type) {
-		return Arrays.stream(values()).filter(v -> v.type == type).findAny().orElseThrow(() -> new RuntimeException("Unsupported message type"));
+	public static MessageType forValue(int value) {
+		return Arrays.stream(values()).filter(m -> m.intValue == value).findAny().orElseThrow(RuntimeException::new);
 	}
-
+	
 }

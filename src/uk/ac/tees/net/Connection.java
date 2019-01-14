@@ -58,7 +58,7 @@ public final class Connection implements Closeable {
 		try {
 			InputStream in = socket.getInputStream();
 
-			MessageType type = MessageType.forType(in.read());
+			MessageType type = MessageType.forValue(in.read());
 
 			if (type == MessageType.TERMINATION) {
 				return new TerminationMessage();
@@ -89,7 +89,7 @@ public final class Connection implements Closeable {
 		try {
 			OutputStream out = socket.getOutputStream();
 
-			out.write(message.getType().getType());
+			out.write(message.getType().getIntValue());
 			StreamUtility.writeString(out, message.getSource());
 			StreamUtility.writeString(out, message.getDestination());
 			out.write(message.getContents().length);
