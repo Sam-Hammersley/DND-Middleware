@@ -1,4 +1,4 @@
-package uk.ac.tees.portal;
+package uk.ac.tees.node;
 
 import java.net.Socket;
 import java.util.HashMap;
@@ -12,13 +12,14 @@ import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
 import uk.ac.tees.net.util.SocketUtility;
+import uk.ac.tees.node.monitor.NodeMonitor;
 
 /**
  * Represents a portal within the middleware.
  * 
  * @author Sam Hammersley (q5315908)
  */
-public class Portal extends MetaAgent {
+public class Portal extends Node {
 
 	/**
 	 * {@link MetaAgent}s mapped to their unique identifier.
@@ -35,8 +36,8 @@ public class Portal extends MetaAgent {
 	 * 
 	 * @param name name of this portal.
 	 */
-	public Portal(String uid) {
-		super(uid);
+	public Portal(String uid, NodeMonitor nodeMonitor) {
+		super(uid, nodeMonitor);
 	}
 
 	/**
@@ -123,7 +124,7 @@ public class Portal extends MetaAgent {
 	}
 
 	@Override
-	public void handle(Message message) {
+	public void handleMessage(Message message) {
 		if (message.getDestination().equals(uid)) {
 			System.out.println(message);
 

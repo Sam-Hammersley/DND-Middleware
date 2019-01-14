@@ -1,11 +1,11 @@
-package uk.ac.tees.net.message.handler;
+package uk.ac.tees.node.router.messages;
 
 import java.util.HashSet;
 
-import uk.ac.tees.Router;
 import uk.ac.tees.net.message.Message;
+import uk.ac.tees.node.router.Router;
 
-public class AddAgentMessageHandler implements MessageHandler<Router> {
+public class AddAgentMessageHandler implements RouterMessageHandler<Router> {
 
 	@Override
 	public void handleMessage(Router router, Message message) {

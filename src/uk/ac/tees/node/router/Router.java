@@ -1,4 +1,4 @@
-package uk.ac.tees;
+package uk.ac.tees.node.router;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -12,22 +12,23 @@ import java.util.concurrent.Executors;
 
 import javax.net.ServerSocketFactory;
 
-import uk.ac.tees.agent.MetaAgent;
 import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.NetworkConstants;
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
-import uk.ac.tees.net.message.handler.MessageHandler;
-import uk.ac.tees.net.message.handler.MessageHandlers;
 import uk.ac.tees.net.message.impl.StringMessage;
 import uk.ac.tees.net.util.SocketUtility;
+import uk.ac.tees.node.Node;
+import uk.ac.tees.node.monitor.NodeMonitor;
+import uk.ac.tees.node.router.messages.RouterMessageHandler;
+import uk.ac.tees.node.router.messages.RouterMessageHandlers;
 
 /**
  * Represents a router that takes in connections
  * 
  * @author q5315908
  */
-public class Router extends MetaAgent {
+public class Router extends Node {
 	
 	/**
 	 * {@link ExecutorService} to run concurrent tasks on.
@@ -49,8 +50,8 @@ public class Router extends MetaAgent {
 	 *
 	 * @param port the port to run this service on.
 	 */
-	public Router(int port) {
-		super(NetworkConstants.HOST_ADDRESS);
+	public Router(int port, NodeMonitor nodeMonitor) {
+		super(NetworkConstants.HOST_ADDRESS, nodeMonitor);
 		
 		this.port = port;
 	}
@@ -157,8 +158,8 @@ public class Router extends MetaAgent {
 	}
 
 	@Override
-	protected void handle(Message message) {
-		MessageHandler<Router> handler = MessageHandlers.get(message.getType());
+	public void handleMessage(Message message) {
+		RouterMessageHandler<Router> handler = RouterMessageHandlers.get(message.getType());
 
 		if (handler != null) {
 			handler.handleMessage(this, message);

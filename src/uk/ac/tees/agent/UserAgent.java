@@ -2,10 +2,10 @@ package uk.ac.tees.agent;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import uk.ac.tees.net.message.Message;
-import uk.ac.tees.net.message.handler.MessageHandler;
-import uk.ac.tees.portal.Portal;
+import uk.ac.tees.node.Portal;
 
 /**
  * Represents a user-defined agent.
@@ -20,25 +20,24 @@ public class UserAgent extends MetaAgent {
 	private Portal portal;
 
 	/**
-	 * {@link MessageHandler}s for incoming messages.
+	 * {@link Consumer}s for incoming messages
 	 */
-	private final List<MessageHandler<UserAgent>> messageHandlers = new ArrayList<>();
+	private final List<Consumer<Message>> messageConsumers = new ArrayList<>();
 
 	/**
 	 * Constructs a new {@link UserAgent}.
 	 * 
-	 * @param uid
-	 * @param handlers
+	 * @param uid the name of this user agent
 	 */
 	protected UserAgent(String uid) {
 		super(uid);
 	}
 	
 	/**
-	 * Adds a {@link MessageHandler} to {@link #messageHandlers}.
+	 * Adds a {@link Consumer} to {@link #messageConsumers}.
 	 */
-	public void addMessageHandler(MessageHandler<UserAgent> messageHandler) {
-		messageHandlers.add(messageHandler);
+	public void addMessageHandler(Consumer<Message> messageConsumer) {
+		messageConsumers.add(messageConsumer);
 	}
 	
 	/**
@@ -57,7 +56,9 @@ public class UserAgent extends MetaAgent {
 
 	@Override
 	public void handle(Message message) {
-		messageHandlers.forEach(h -> h.handleMessage(this, message));
+		for (Consumer<Message> consumer : messageConsumers) {
+			consumer.accept(message);
+		}
 	}
 
 	@Override

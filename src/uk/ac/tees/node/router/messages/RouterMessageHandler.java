@@ -1,8 +1,8 @@
-package uk.ac.tees.net.message.handler;
+package uk.ac.tees.node.router.messages;
 
 import uk.ac.tees.net.message.Message;
 
-public interface MessageHandler<T> {
+public interface RouterMessageHandler<T> {
 
 	/**
 	 * How a message should be handled.

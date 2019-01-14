@@ -5,21 +5,23 @@ import java.util.Scanner;
 import uk.ac.tees.agent.SomeUserAgent;
 import uk.ac.tees.net.NetworkConstants;
 import uk.ac.tees.net.message.impl.StringMessage;
-import uk.ac.tees.portal.Portal;
+import uk.ac.tees.node.Portal;
 
 public final class Client {
 
 	public static void main(String[] args) {
 		
-		Portal portal = new Portal("portal2");
+		Portal portal = new Portal("portal2", (n, m) -> {
+			System.out.println(n.getUid() + " received message: \t" + m);
+		});
+		portal.start();
 		
 		SomeUserAgent agent = new SomeUserAgent("user2");
-		agent.addMessageHandler((u, m) -> System.out.println(m));
+		agent.addMessageHandler(System.out::println);
 		
 		portal.addAgent(agent);
 		
 		portal.connectToRouter("localhost", NetworkConstants.SERVER_PORT);
-		portal.start();
 		
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (scanner.hasNextLine()) {

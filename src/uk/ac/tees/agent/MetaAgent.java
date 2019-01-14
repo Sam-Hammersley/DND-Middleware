@@ -41,19 +41,6 @@ public abstract class MetaAgent {
 	}
 
 	/**
-	 * Waits for and takes {@link Message}s from the queue.
-	 */
-	private void processMessages() {
-		try {
-			while (true) {
-				handle(messages.take());
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * To be called to start receiving and processing messages.
 	 */
 	public final void start() {
@@ -90,6 +77,19 @@ public abstract class MetaAgent {
 	 * Receives messages, this is called in a new {@link Thread}.
 	 */
 	protected abstract void receiveMessages();
+	
+	/**
+	 * Waits for and takes {@link Message}s from the queue.
+	 */
+	private void processMessages() {
+		try {
+			while (true) {
+				handle(messages.take());
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	/**
 	 * Queues a message to be processed.
