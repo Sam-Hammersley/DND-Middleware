@@ -11,14 +11,14 @@ public final class Client {
 
 	public static void main(String[] args) {
 		
-		Portal portal = new Portal("portal2", (n, m) -> System.out.println("NodeObserver: " + n.getUid() + " RECEIVED " + m));
+		Portal portal = new Portal("portal1", (n, m) -> System.out.println("NodeObserver: " + n.getUid() + " HANDLED:\n\t" + m));
 		
-		SomeUserAgent agent = new SomeUserAgent("user2");
+		SomeUserAgent agent = new SomeUserAgent("user1");
 		agent.addMessageConsumer(System.out::println);
 		
 		portal.addAgent(agent);
 		
-		portal.connectToRouter("localhost", NetworkConstants.SERVER_PORT);
+		portal.connectToRouter(NetworkConstants.HOST_ADDRESS, NetworkConstants.SERVER_PORT);
 		portal.start();
 		
 		try (Scanner scanner = new Scanner(System.in)) {

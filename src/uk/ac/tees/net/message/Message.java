@@ -71,7 +71,9 @@ public class Message {
 	
 	@Override
 	public String toString() {
-		return "[" + timestamp + "] to " + destination + ": " + new String(contents);
+		String s = contents.length > 0 ? ": " + new String(contents) : "";
+		
+		return "[" + timestamp + "] " + type + " (" + source + " to " + destination + s + ")";
 	}
 	
 }

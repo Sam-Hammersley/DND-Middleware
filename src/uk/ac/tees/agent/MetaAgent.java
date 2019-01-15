@@ -1,5 +1,7 @@
 package uk.ac.tees.agent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -22,9 +24,16 @@ public abstract class MetaAgent {
 	private final BlockingQueue<Message> messages = new LinkedBlockingQueue<Message>();
 
 	/**
-	 * Executes runnables tasks.
+	 * Executes runnable tasks.
 	 */
 	private final ExecutorService executor = Executors.newCachedThreadPool();
+	
+	/**
+	 * {@link List} of {@link Runnable} tasks to be executed upon start up of this meta-agent
+	 */
+	private final List<Runnable> startUpProcesses = new ArrayList<>();
+	
+	private boolean started = false;
 
 	/**
 	 * A field to uniquely identify agents.
@@ -38,28 +47,27 @@ public abstract class MetaAgent {
 	 */
 	public MetaAgent(String uid) {
 		this.uid = uid;
+		this.startUpProcesses.add(new MessageProcessor(this));
 	}
 
 	/**
-	 * Waits for and takes {@link Message}s from the queue.
+	 * Adds a {@link Runnable} task to be ran at start up.
+	 * 
+	 * @param runnable
 	 */
-	private void processMessages() {
-		try {
-			while (true) {
-				handle(messages.take());
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	public void addProcess(Runnable runnable) {
+		if (started) {
+			return;
 		}
+		startUpProcesses.add(runnable);
 	}
-
+	
 	/**
 	 * To be called to start receiving and processing messages.
 	 */
 	public final void start() {
-		executor.submit(this::receiveMessages);
-		
-		executor.submit(this::processMessages);
+		started = true;
+		startUpProcesses.forEach(executor::execute);
 	}
 
 	/**
@@ -85,11 +93,6 @@ public abstract class MetaAgent {
 	 * @param message
 	 */
 	protected abstract void handle(Message message);
-
-	/**
-	 * Receives messages, this is called in a new {@link Thread}.
-	 */
-	protected abstract void receiveMessages();
 	
 	/**
 	 * Queues a message to be processed.
@@ -99,6 +102,35 @@ public abstract class MetaAgent {
 	 */
 	public final boolean queue(Message message) {
 		return messages.offer(message);
+	}
+	
+	/**
+	 * A {@link Runnable} task that calls {@link BlockingQueue#take()} and blocks 
+	 * until a message is available a which point it's handled by the abstract method.
+	 * 
+	 * @author Sam Hammersley (q5315908)
+	 */
+	final class MessageProcessor implements Runnable {
+
+		/**
+		 * The {@link MetaAgent} to process messages for.
+		 */
+		private final MetaAgent agent;
+		
+		public MessageProcessor(MetaAgent agent) {
+			this.agent = agent;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				while (true) {
+					agent.handle(agent.messages.take());
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 }

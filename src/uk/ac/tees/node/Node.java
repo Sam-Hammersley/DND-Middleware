@@ -18,6 +18,7 @@ public abstract class Node extends MetaAgent {
 	public Node(String uid, NodeObserver observer) {
 		super(uid);
 		this.observer = observer;
+		this.addProcess(() -> receiveMessages());
 	}
 
 	@Override
@@ -30,5 +31,10 @@ public abstract class Node extends MetaAgent {
 	}
 	
 	public abstract void handleMessage(Message message);
+	
+	/**
+	 * Receives messages, this is called in a new {@link Thread}.
+	 */
+	protected abstract void receiveMessages();
 	
 }

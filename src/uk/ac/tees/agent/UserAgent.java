@@ -59,9 +59,4 @@ public class UserAgent extends MetaAgent {
 		messageConsumers.forEach(h -> h.accept(message));
 	}
 
-	@Override
-	protected void receiveMessages() {
-		// do nothing user agents are passed messages from the portal.
-	}
-
 }

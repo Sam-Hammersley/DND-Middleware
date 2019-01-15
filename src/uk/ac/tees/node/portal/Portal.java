@@ -6,11 +6,12 @@ import java.util.Map;
 
 import javax.net.SocketFactory;
 
-import uk.ac.tees.agent.MetaAgent;
 import uk.ac.tees.agent.UserAgent;
 import uk.ac.tees.net.Connection;
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.net.message.MessageType;
+import uk.ac.tees.net.message.impl.AddAgentMessage;
+import uk.ac.tees.net.message.impl.StringMessage;
 import uk.ac.tees.net.util.SocketUtility;
 import uk.ac.tees.node.Node;
 import uk.ac.tees.node.NodeObserver;
@@ -23,7 +24,7 @@ import uk.ac.tees.node.NodeObserver;
 public class Portal extends Node {
 
 	/**
-	 * {@link MetaAgent}s mapped to their unique identifier.
+	 * {@link UserAgent}s mapped to their unique identifier.
 	 */
 	private final Map<String, UserAgent> agents = new HashMap<>();
 
@@ -55,7 +56,8 @@ public class Portal extends Node {
 		
 		connection.write(new Message(MessageType.ADD_PORTAL, uid, host, new byte[0]));
 		
-		agents.values().forEach(a -> connection.write(new Message(MessageType.ADD_AGENT, uid, host, a.getUid().getBytes())));
+		// send an Add agent message for each agent to notify the router of the users existence
+		agents.values().forEach(a -> connection.write(new AddAgentMessage(uid, host, a.getUid())));
 	}
 
 	/**
@@ -65,7 +67,7 @@ public class Portal extends Node {
 	 */
 	public void addAgent(UserAgent agent) {
 		if (connection != null) {
-			connection.write(new Message(MessageType.ADD_AGENT, uid, connection.getAddress(), agent.getUid().getBytes()));
+			connection.write(new AddAgentMessage(uid, connection.getAddress(), agent.getUid()));
 		}
 		
 		agents.put(agent.getUid(), agent);
@@ -103,51 +105,38 @@ public class Portal extends Node {
 		return agents.containsKey(uid);
 	}
 
-	/**
-	 * Sends the specified message to the appropriate user agent.
-	 * 
-	 * @param message the message to send to the agent.
-	 */
-	private void sendToAgent(Message message) {
-		UserAgent agent = agents.get(message.getDestination());
-		
-		agent.queue(message);
-	}
-
 	@Override
 	public void send(Message message) {
-		if (containsAgent(message.getDestination())) {
-			sendToAgent(message);
+		if (containsAgent(message.getDestination())) { // if agent is registered to this portal send it to them
+			agents.get(message.getDestination()).queue(message);
 			
-		} else {
+		} else if (connection != null) { // otherwise send it off to the router if connected
 			connection.write(message);
+			
+		} else if (containsAgent(message.getSource())) { // send a message to source to say couldn't find agent
+			StringMessage response = new StringMessage(uid, message.getSource(), "Couldn't find agent with id " + message.getDestination());
+			agents.get(message.getSource()).queue(response);
+			
 		}
 	}
 
 	@Override
 	public void handleMessage(Message message) {
-		if (message.getDestination().equals(uid)) {
-			System.out.println(message);
-
-		} else if (containsAgent(message.getDestination())) {
-			sendToAgent(message);
+		if (!message.getDestination().equals(uid)) {
+			send(message); // pass on the message
 
 		} else {
-			connection.write(message);
-
+			//System.out.println(message); // TODO appropriately handle messages
 		}
 	}
 
 	@Override
-	public void receiveMessages() {
-		while (true) {
-			if (connection == null) {
-				continue;
-			}
+	protected void receiveMessages() {
+		while (true && connection != null) { // only receive messages here if connected
 
 			Message message = connection.read();
 
-			if (message.getType().equals(MessageType.TERMINATION)) {
+			if (message.getType().equals(MessageType.TERMINATION)) { // nothing more to read from the connection
 				break;
 			}
 

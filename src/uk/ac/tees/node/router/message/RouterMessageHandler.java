@@ -1,4 +1,4 @@
-package uk.ac.tees.net.message.handler;
+package uk.ac.tees.node.router.message;
 
 import uk.ac.tees.net.message.Message;
 import uk.ac.tees.node.router.Router;

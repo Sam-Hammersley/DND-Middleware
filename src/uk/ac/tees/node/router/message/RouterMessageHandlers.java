@@ -1,4 +1,4 @@
-package uk.ac.tees.net.message.handler;
+package uk.ac.tees.node.router.message;
 
 import java.util.HashMap;
 import java.util.Map;
