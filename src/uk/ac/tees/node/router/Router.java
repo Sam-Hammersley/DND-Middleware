@@ -17,8 +17,8 @@ import uk.ac.tees.net.message.impl.StringMessage;
 import uk.ac.tees.net.util.SocketUtility;
 import uk.ac.tees.node.Node;
 import uk.ac.tees.node.NodeObserver;
-import uk.ac.tees.node.router.message.RouterMessageHandler;
-import uk.ac.tees.node.router.message.RouterMessageHandlers;
+import uk.ac.tees.node.router.message.SystemMessageHandler;
+import uk.ac.tees.node.router.message.SystemMessageHandlers;
 
 /**
  * Represents a router that takes in connections
@@ -49,11 +49,10 @@ public class Router extends Node {
 	 */
 	public Router(int port, NodeObserver observer) {
 		super(NetworkConstants.HOST_ADDRESS, observer);
-		
 		this.port = port;
 	}
 	
-	public ConnectionManager getConnectionManager() {
+	public ConnectionManager getConnections() {
 		return connections;
 	}
 
@@ -65,8 +64,8 @@ public class Router extends Node {
 		for (;;) {
 			try {
 				Socket socket = serverSocket.accept();
-
-				readSocket(socket);
+				
+				readFromSocket(socket);
 			} catch (IOException e) {
 				throw new RuntimeException("Socket exception thrown", e);
 			}
@@ -74,38 +73,30 @@ public class Router extends Node {
 	}
 
 	/**
-	 * Receives a {@link Message} from a {@link Socket}.
+	 * Creates thread for each connection and reads a {@link Message} 
+	 * from the {@link Socket} via the connection.
 	 * 
 	 * Thread-per-Connection design.
 	 * 
 	 * @param socket the socket to receive a message from.
 	 */
-	public final void readSocket(Socket socket) {
+	public final void readFromSocket(Socket socket) {
 		executor.submit(() -> {
-			
 			try (Connection connection = new Connection(socket)) {
-
-				System.out.println("Connection established with " + connection.getAddress());
-				Message message = connection.read();
 				
-				if (message.getType().equals(MessageType.ADD_PORTAL)) {// special case.
-					if (!connections.storeConnection(message.getSource(), connection)) {
-						connection.write(new StringMessage(uid, message.getSource(), "Already contains connection for " + uid));
-						connection.close();
-						return;
-					}
+				Message message = connection.read();
 
-				} else if (!connections.hasConnection(message.getSource())) {
-					connection.write(new StringMessage(uid, message.getSource(), "Connection refused, handshake required"));
-					connection.close();
-					return;
+				SystemMessageHandler handler = SystemMessageHandlers.get(message.getType());
+
+				if (handler != null) {
+					handler.handleMessage(this, message, connection);
 				}
 				
 				// receive messages whilst the type is not termination
 				for (; !message.getType().equals(MessageType.TERMINATION); message = connection.read()) {
 					queue(message);
 				}
-
+	
 			} catch (Exception e) {
 				throw new RuntimeException("Exception thrown during connection", e);
 			}
@@ -114,29 +105,21 @@ public class Router extends Node {
 
 	@Override
 	public void send(Message message) {
-		Optional<Connection> connection = connections.getConnection(message.getDestination());
-		
+		if (!connections.hasConnection(message.getDestination())) { // destination not found
 
-		if (connection.isPresent()) {
-			connection.ifPresent(c -> c.write(message));
+			Optional<Connection> sourceConnection = connections.getConnection(message.getSource());
 			
-		}
-		
-	}
-
-	@Override
-	public void handleMessage(Message message) {
-
-		if (!message.getDestination().equals(uid)) { // destination is not this router
-			send(message);
-			
-		} else {
-			RouterMessageHandler handler = RouterMessageHandlers.get(message.getType());
-			
-			if (handler != null) {
-				handler.handleMessage(this, message);
+			if (sourceConnection.isPresent()) { // if we still have connection to source send back response
+				StringMessage response = new StringMessage(message.getSource(), uid, "Destination (" + message.getDestination() + ") not found!");
+				
+				sourceConnection.get().write(response);
 			}
+			return;
 		}
+		
+		Connection connection = connections.getConnection(message.getDestination()).get();
+			
+		connection.write(message);
 	}
 
 }

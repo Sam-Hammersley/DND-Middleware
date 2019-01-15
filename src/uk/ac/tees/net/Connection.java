@@ -42,6 +42,15 @@ public final class Connection implements Closeable {
 	}
 	
 	/**
+	 * Determines whether this connection is closed.
+	 * 
+	 * @return {@code true} if the connection is closed.
+	 */
+	public boolean isClosed() {
+		return socket.isClosed();
+	}
+	
+	/**
 	 * Closes the connection.
 	 */
 	@Override
@@ -87,19 +96,20 @@ public final class Connection implements Closeable {
 	 *            the message to write to the socket
 	 */
 	public void write(Message message) {
-		if (message.getType() == MessageType.TERMINATION) {
-			throw new RuntimeException("Unsuppported message");
-		}
 		try {
 			OutputStream out = socket.getOutputStream();
 
 			out.write(message.getType().getIntValue());
+			
 			StreamUtility.writeString(out, message.getSource());
+			
 			StreamUtility.writeString(out, message.getDestination());
+			
 			out.write(message.getContents().length);
 			out.write(message.getContents());
+			
 		} catch (IOException e) {
-			throw new RuntimeException("Failed to write message to socket", e);
+			throw new RuntimeException(message + " - failed to write message to socket", e);
 		}
 	}
 	
@@ -113,4 +123,15 @@ public final class Connection implements Closeable {
 		return socket.hashCode();
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Connection)) {
+			return false;
+		}
+		
+		Connection other = (Connection) obj;
+		
+		return socket.equals(other.socket);
+	}
+	
 }

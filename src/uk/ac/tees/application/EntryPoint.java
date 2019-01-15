@@ -1,4 +1,4 @@
-package uk.ac.tees;
+package uk.ac.tees.application;
 
 import java.net.UnknownHostException;
 

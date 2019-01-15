@@ -3,6 +3,7 @@ package uk.ac.tees.node.portal;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.net.SocketFactory;
 
@@ -56,8 +57,7 @@ public class Portal extends Node {
 		
 		connection.write(new Message(MessageType.ADD_PORTAL, uid, host, new byte[0]));
 		
-		// send an Add agent message for each agent to notify the router of the users existence
-		agents.values().forEach(a -> connection.write(new AddAgentMessage(uid, host, a.getUid())));
+		agents.keySet().forEach(a -> connection.write(new AddAgentMessage(uid, host, a)));
 	}
 
 	/**
@@ -67,7 +67,7 @@ public class Portal extends Node {
 	 */
 	public void addAgent(UserAgent agent) {
 		if (connection != null) {
-			connection.write(new AddAgentMessage(uid, connection.getAddress(), agent.getUid()));
+			connection.write(new AddAgentMessage(uid, connection.getAddress().substring(1), agent.getUid()));
 		}
 		
 		agents.put(agent.getUid(), agent);
@@ -77,12 +77,12 @@ public class Portal extends Node {
 	}
 	
 	/**
-	 * Gets the agent count.
+	 * Gets the agents names.
 	 * 
-	 * @return the agent count.
+	 * @return a list of the agents names.
 	 */
-	public int getAgentCount() {
-		return agents.size();
+	public Set<String> getAgentIds() {
+		return agents.keySet();
 	}
 	
 	/**
@@ -110,32 +110,22 @@ public class Portal extends Node {
 		if (containsAgent(message.getDestination())) { // if agent is registered to this portal send it to them
 			agents.get(message.getDestination()).queue(message);
 			
-		} else if (connection != null) { // otherwise send it off to the router if connected
+		} else if (connection != null && !connection.isClosed()) { // otherwise send it off to the router if connected
 			connection.write(message);
 			
 		} else if (containsAgent(message.getSource())) { // send a message to source to say couldn't find agent
+			
 			StringMessage response = new StringMessage(uid, message.getSource(), "Couldn't find agent with id " + message.getDestination());
 			agents.get(message.getSource()).queue(response);
-			
-		}
-	}
-
-	@Override
-	public void handleMessage(Message message) {
-		if (!message.getDestination().equals(uid)) {
-			send(message); // pass on the message
-
-		} else {
-			//System.out.println(message); // TODO appropriately handle messages
 		}
 	}
 
 	@Override
 	protected void receiveMessages() {
-		while (true && connection != null) { // only receive messages here if connected
+		while (true && connection != null && !connection.isClosed()) { // only receive messages here if connected
 
 			Message message = connection.read();
-
+			
 			if (message.getType().equals(MessageType.TERMINATION)) { // nothing more to read from the connection
 				break;
 			}

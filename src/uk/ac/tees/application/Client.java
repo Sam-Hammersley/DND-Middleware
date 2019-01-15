@@ -1,8 +1,7 @@
-package uk.ac.tees;
+package uk.ac.tees.application;
 
 import java.util.Scanner;
 
-import uk.ac.tees.agent.SomeUserAgent;
 import uk.ac.tees.net.NetworkConstants;
 import uk.ac.tees.net.message.impl.StringMessage;
 import uk.ac.tees.node.portal.Portal;
@@ -16,10 +15,9 @@ public final class Client {
 		SomeUserAgent agent = new SomeUserAgent("user1");
 		agent.addMessageConsumer(System.out::println);
 		
-		portal.addAgent(agent);
-		
 		portal.connectToRouter(NetworkConstants.HOST_ADDRESS, NetworkConstants.SERVER_PORT);
 		portal.start();
+		portal.addAgent(agent);
 		
 		try (Scanner scanner = new Scanner(System.in)) {
 			while (scanner.hasNextLine()) {

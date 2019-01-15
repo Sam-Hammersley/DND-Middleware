@@ -27,10 +27,10 @@ public abstract class Node extends MetaAgent {
 			observer.update(this, message);
 		}
 		
-		handleMessage(message);
+		if (!message.getDestination().equals(uid)) { // destination is not this router
+			send(message);
+		}
 	}
-	
-	public abstract void handleMessage(Message message);
 	
 	/**
 	 * Receives messages, this is called in a new {@link Thread}.
