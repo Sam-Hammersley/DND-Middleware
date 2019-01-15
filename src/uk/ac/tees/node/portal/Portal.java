@@ -134,4 +134,8 @@ public class Portal extends Node {
 		}
 	}
 
+	public int getAgentCount() {
+		return agents.size();
+	}
+
 }
