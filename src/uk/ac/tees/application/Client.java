@@ -10,9 +10,9 @@ public final class Client {
 
 	public static void main(String[] args) {
 		
-		Portal portal = new Portal("portal1", (n, m) -> System.out.println("NodeObserver: " + n.getUid() + " HANDLED:\n\t" + m));
+		Portal portal = new Portal("portal2", (n, m) -> System.out.println("NodeObserver: " + n.getUid() + " HANDLED:\t" + m));
 		
-		SomeUserAgent agent = new SomeUserAgent("user1");
+		SomeUserAgent agent = new SomeUserAgent("user2");
 		agent.addMessageConsumer(System.out::println);
 		
 		portal.connectToRouter(NetworkConstants.HOST_ADDRESS, NetworkConstants.SERVER_PORT);

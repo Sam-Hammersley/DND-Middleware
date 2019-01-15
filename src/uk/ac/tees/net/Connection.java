@@ -38,7 +38,7 @@ public final class Connection implements Closeable {
 	 * @return the connected to address
 	 */
 	public String getAddress() {
-		return socket.getInetAddress().toString();
+		return socket.getInetAddress().toString().substring(1);
 	}
 	
 	/**

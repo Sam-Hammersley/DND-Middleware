@@ -67,7 +67,7 @@ public class Portal extends Node {
 	 */
 	public void addAgent(UserAgent agent) {
 		if (connection != null) {
-			connection.write(new AddAgentMessage(uid, connection.getAddress().substring(1), agent.getUid()));
+			connection.write(new AddAgentMessage(uid, connection.getAddress(), agent.getUid()));
 		}
 		
 		agents.put(agent.getUid(), agent);

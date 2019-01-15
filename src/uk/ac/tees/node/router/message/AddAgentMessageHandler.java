@@ -11,10 +11,6 @@ public class AddAgentMessageHandler implements SystemMessageHandler {
 
 	@Override
 	public void handleMessage(Router router, Message message, Connection connection) {
-		if (!router.getConnections().getConnection(router.getUid()).get().equals(connection)) {
-			System.out.println("error");
-		}
-		
 		Optional<ConnectionKey> key = router.getConnections().getConnectionKey(message.getSource());
 		
 		key.ifPresent(k -> {

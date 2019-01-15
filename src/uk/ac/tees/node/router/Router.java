@@ -84,16 +84,15 @@ public class Router extends Node {
 		executor.submit(() -> {
 			try (Connection connection = new Connection(socket)) {
 				
-				Message message = connection.read();
-
-				SystemMessageHandler handler = SystemMessageHandlers.get(message.getType());
-
-				if (handler != null) {
-					handler.handleMessage(this, message, connection);
-				}
-				
 				// receive messages whilst the type is not termination
-				for (; !message.getType().equals(MessageType.TERMINATION); message = connection.read()) {
+				for (Message message = connection.read(); !message.getType().equals(MessageType.TERMINATION); message = connection.read()) {
+					
+					SystemMessageHandler handler = SystemMessageHandlers.get(message.getType());
+
+					if (handler != null) {
+						handler.handleMessage(this, message, connection);
+					}
+					
 					queue(message);
 				}
 	

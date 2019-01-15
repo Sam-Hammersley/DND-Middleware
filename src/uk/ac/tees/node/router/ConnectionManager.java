@@ -10,7 +10,7 @@ import uk.ac.tees.net.ConnectionKey;
 public final class ConnectionManager {
 	
 	/**
-	 * Maps uids to connections, includes a portals user agent ids.
+	 * Maps portal uid to connection
 	 */
 	private final Map<ConnectionKey, Connection> cachedConnections = new ConcurrentHashMap<>();
 
