@@ -13,7 +13,7 @@ import uk.ac.tees.node.router.Router;
 public class Tests {
 
 	public static void main(String[] args) {
-		test(500, 5, 50, 100);
+		test(3000, 5, 50, 20);
 	}
 
 	static long send(UserAgent userAgent, String destination, String message) {
@@ -52,21 +52,19 @@ public class Tests {
 		/**
 		 * Warm up tests.
 		 */
-		Random random = new Random();		
-		for (int x = 0; x < 10; x++) {
+		Random random = new Random();
 
-			for (int j = 0; j < numberOfPortals; j++) {
-				Portal p = portals.get("portal" + j);
+		for (int j = 0; j < numberOfPortals; j++) {
+			Portal p = portals.get("portal" + j);
 
-				for (int i = 0; i < numberOfUsers; i++) {
-					UserAgent sender = p.getAgent(p.getUid() + "agent" + i);
+			for (int i = 0; i < numberOfUsers; i++) {
+				UserAgent sender = p.getAgent(p.getUid() + "agent" + i);
 
-					for (int k = 0; k < messagesPerUser; k++) {
-						String portal = "portal" + random.nextInt(numberOfUsers);
-						String recipient = portal + "agent" + random.nextInt(numberOfUsers);
-						
-						send(sender, recipient, "" + i * k);
-					}
+				for (int k = 0; k < messagesPerUser; k++) {
+					String portal = "portal" + random.nextInt(numberOfUsers);
+					String recipient = portal + "agent" + random.nextInt(numberOfUsers);
+
+					send(sender, recipient, "" + i * k);
 				}
 			}
 		}
@@ -76,7 +74,8 @@ public class Tests {
 		 */
 		long total = 0;	
 		for (int x = 0; x < numberOfTests; x++) {
-
+			
+			long testTime = 0;
 			for (int j = 0; j < numberOfPortals; j++) {
 				Portal p = portals.get("portal" + j);
 
@@ -86,14 +85,15 @@ public class Tests {
 					for (int k = 0; k < messagesPerUser; k++) {
 						String portal = "portal" + RANDOM.nextInt(numberOfUsers);
 						String recipient = portal + "agent" + RANDOM.nextInt(numberOfUsers);
-						
-						total += send(sender, recipient, "" + i * k);
+					
+						testTime += send(sender, recipient, "" + i * k);
 					}
 				}
 			}
+			total += testTime / (numberOfPortals * numberOfUsers * messagesPerUser);
+			
 		}
-
-		System.out.println(total / (numberOfTests * numberOfUsers * messagesPerUser * numberOfPortals));
+		System.out.println(total / numberOfTests);
 	}
 
 }
