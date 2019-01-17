@@ -6,7 +6,7 @@ public class SomeUserAgent extends UserAgent {
 
 	public SomeUserAgent(String uid) {
 		super(uid);
-		//addMessageConsumer(System.out::println);
+		addMessageConsumer(System.out::println);
 	}
 
 }

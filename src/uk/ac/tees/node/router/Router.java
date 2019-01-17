@@ -93,7 +93,7 @@ public class Router extends Node {
 					if (handler != null) {
 						handler.handleMessage(this, message, connection);
 					}
-					
+
 					queue(message);
 				}
 	

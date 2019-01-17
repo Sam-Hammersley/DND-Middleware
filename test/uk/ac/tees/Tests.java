@@ -13,7 +13,7 @@ import uk.ac.tees.node.router.Router;
 public class Tests {
 
 	public static void main(String[] args) {
-		test(3000, 5, 50, 20);
+		test(50, 30, 50, 20);
 	}
 
 	static long send(UserAgent userAgent, String destination, String message) {
