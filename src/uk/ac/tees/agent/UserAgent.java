@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import uk.ac.tees.net.message.Message;
+import uk.ac.tees.net.message.impl.StringMessage;
 import uk.ac.tees.node.portal.Portal;
 
 /**
@@ -51,7 +52,17 @@ public class UserAgent extends MetaAgent {
 
 	@Override
 	public void send(Message message) {
-		portal.handle(message);
+		portal.queue(message);
+	}
+	
+	/**
+	 * Sends a {@link StringMessage} to the given destination.
+	 * 
+	 * @param destination the destination.
+	 * @param message the string message.
+	 */
+	public void send(String destination, String message) {
+		send(new StringMessage(this.getUid(), destination, message));
 	}
 
 	@Override

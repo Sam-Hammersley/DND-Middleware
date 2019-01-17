@@ -87,6 +87,7 @@ public class Router extends Node {
 				// receive messages whilst the type is not termination
 				for (Message message = connection.read(); !message.getType().equals(MessageType.TERMINATION); message = connection.read()) {
 					
+					// TODO: queue system messages!
 					SystemMessageHandler handler = SystemMessageHandlers.get(message.getType());
 
 					if (handler != null) {

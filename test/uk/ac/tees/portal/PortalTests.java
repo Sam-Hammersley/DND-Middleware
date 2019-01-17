@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import uk.ac.tees.application.SomeUserAgent;
+import uk.ac.tees.agent.SomeUserAgent;
 import uk.ac.tees.node.portal.Portal;
 
 /**
